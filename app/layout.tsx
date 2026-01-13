@@ -1,12 +1,12 @@
 import type { Metadata } from "next";
-import { Plus_Jakarta_Sans } from "next/font/google";
+import { Inter } from "next/font/google";
 import "./globals.css";
 
-const font = Plus_Jakarta_Sans({ subsets: ["latin"] });
+const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "InsightFlow | AI Data Visualization",
-  description: "Turn raw data into beautiful, actionable insights automatically.",
+  title: "InsightFlow | Enterprise Analytics",
+  description: "Secure, automated data intelligence for modern business.",
 };
 
 export default function RootLayout({
@@ -16,7 +16,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={font.className}>
+      <body className={inter.className}>
         {children}
       </body>
     </html>
