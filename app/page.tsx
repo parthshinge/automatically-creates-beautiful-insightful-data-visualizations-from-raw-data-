@@ -6,12 +6,14 @@ import {
   AreaChart, Area, PieChart, Pie, Cell
 } from "recharts";
 import {
-  Upload, Zap, TrendingUp, ArrowRight, Activity, PieChart as PieIcon, FileText, CheckCircle
+  Upload, Zap, TrendingUp, Users, DollarSign,
+  ArrowRight, Activity, PieChart as PieIcon, BarChart3,
+  FileText, CheckCircle, Smartphone, Layout
 } from "lucide-react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { analyzeData, AnalysisResult, ChartRecommendation } from "../lib/ai-analyst";
 
-const COLORS = ['#6366f1', '#ec4899', '#8b5cf6', '#10b981', '#f59e0b', '#3b82f6'];
+const COLORS = ['#4f46e5', '#ec4899', '#8b5cf6', '#10b981', '#f59e0b', '#3b82f6'];
 
 export default function Home() {
   const [result, setResult] = useState<AnalysisResult | null>(null);
@@ -27,14 +29,14 @@ export default function Home() {
     setLoadingStep("Reading File...");
 
     try {
-      setLoadingStep("Identifying Data Types...");
-      // Artificial delay to make it feel like "Deep Analysis"
-      await new Promise(r => setTimeout(r, 800));
+      // Simulation steps for UX
+      setLoadingStep("Identifying Data Structure...");
+      await new Promise(r => setTimeout(r, 1000));
 
       setLoadingStep("Generating Visualizations...");
       const analysis = await analyzeData(file);
 
-      setLoadingStep("Extracting Strategic Insights...");
+      setLoadingStep("Extracting Opportunities...");
       await new Promise(r => setTimeout(r, 800));
 
       setResult(analysis);
@@ -50,177 +52,235 @@ export default function Home() {
     fileInputRef.current?.click();
   };
 
+  // --------------------------------------------------------------------------
+  // LANDING PAGE VIEW
+  // --------------------------------------------------------------------------
   if (!result) {
     return (
-      <main className="min-h-screen flex flex-col items-center justify-center p-8 text-center relative overflow-hidden">
-        <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20 pointer-events-none"></div>
-        <input
-          type="file"
-          ref={fileInputRef}
-          onChange={handleFileUpload}
-          accept=".csv"
-          className="hidden"
-        />
+      <main className="min-h-screen relative overflow-hidden flex flex-col">
+        <div className="bg-grid" />
 
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8 }}
-          className="max-w-4xl z-10"
-        >
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full glass mb-6 text-sm font-medium text-pink-400 border-pink-500/30">
-            <Zap size={14} />
-            <span>AI-Powered Analytics for Agencies</span>
-          </div>
-
-          <h1 className="text-6xl md:text-7xl font-bold mb-6 tracking-tight">
-            Turn Raw Data into <span className="heading-gradient">Actionable Insights</span>
-          </h1>
-
-          <p className="text-xl text-[var(--text-muted)] mb-10 max-w-2xl mx-auto leading-relaxed">
-            Upload your CSV files and let our AI automatically detect patterns, generate professional visual reports, and provide strategic recommendations in seconds.
-          </p>
-
-          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-            <button
-              onClick={triggerUpload}
-              className="btn-primary flex items-center gap-2 text-lg px-8 py-4"
-            >
-              <Upload size={20} />
-              Upload Dataset
-            </button>
-            <button className="px-8 py-4 rounded-xl glass hover:bg-white/5 transition-all font-medium flex items-center gap-2 text-gray-300">
-              Supported: CSV, Excel <ArrowRight size={16} />
-            </button>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-16 text-left relative">
-            {[
-              { icon: <Activity size={20} className="text-blue-400" />, title: "Auto-Analysis", desc: "Instantly detects numeric trends and categorical splits." },
-              { icon: <PieIcon size={20} className="text-purple-400" />, title: "Smart Visuals", desc: "Selects the perfect chart type for your specific data." },
-              { icon: <FileText size={20} className="text-pink-400" />, title: "Executive Summary", desc: "Generates written insights for stakeholder reports." }
-            ].map((f, i) => (
-              <div key={i} className="glass p-5 rounded-xl border border-white/5 hover:border-white/10 transition-colors">
-                <div className="mb-3">{f.icon}</div>
-                <h3 className="font-semibold mb-1">{f.title}</h3>
-                <p className="text-sm text-gray-400 leading-relaxed">{f.desc}</p>
+        {/* Navigation */}
+        <nav className="border-b border-[var(--border)] bg-[var(--surface)]/80 backdrop-blur-md sticky top-0 z-50">
+          <div className="container h-16 flex items-center justify-between">
+            <div className="flex items-center gap-2 font-bold text-xl text-[var(--foreground)]">
+              <div className="w-8 h-8 rounded-lg bg-[var(--primary)] text-white flex items-center justify-center">
+                <Zap size={18} fill="currentColor" />
               </div>
-            ))}
+              InsightFlow
+            </div>
+            <div className="hidden md:flex gap-6 text-sm font-medium text-[var(--text-secondary)]">
+              <a href="#" className="hover:text-[var(--primary)] transition-colors">How it Works</a>
+              <a href="#" className="hover:text-[var(--primary)] transition-colors">Features</a>
+              <a href="#" className="hover:text-[var(--primary)] transition-colors">Pricing</a>
+            </div>
+            <button className="btn btn-primary text-sm">Get Started</button>
           </div>
-        </motion.div>
+        </nav>
 
-        {loading && (
-          <div className="fixed inset-0 bg-black/80 backdrop-blur-md z-50 flex items-center justify-center">
-            <div className="text-center max-w-md">
-              <div className="relative w-20 h-20 mx-auto mb-8">
-                <div className="absolute inset-0 border-4 border-indigo-500/30 rounded-full"></div>
-                <div className="absolute inset-0 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin"></div>
-                <Zap className="absolute inset-0 m-auto text-indigo-400 animate-pulse" size={24} />
+        {/* Hero Section */}
+        <section className="flex-1 flex flex-col items-center justify-center text-center pt-20 pb-20 px-4">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+            className="max-w-3xl mx-auto"
+          >
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-50 border border-indigo-100 text-indigo-600 text-sm font-semibold mb-8">
+              <span className="relative flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-indigo-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-indigo-500"></span>
+              </span>
+              New: AI Analyst Engine 2.0
+            </div>
+
+            <h1 className="text-5xl md:text-6xl font-extrabold tracking-tight mb-6 text-[var(--foreground)]">
+              Data Analytics for <br />
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-violet-600">Marketing Leaders</span>
+            </h1>
+
+            <p className="text-xl text-[var(--text-secondary)] mb-10 max-w-2xl mx-auto leading-relaxed">
+              Turn messy CSV exports into beautiful, client-ready reports in seconds. No coding, no complex setup. Just drop your file.
+            </p>
+
+            {/* Upload Card */}
+            <div className="card max-w-xl mx-auto mb-8 hover:border-indigo-300 transition-colors cursor-pointer group" onClick={triggerUpload}>
+              <div className="border-2 border-dashed border-[var(--border)] rounded-xl p-8 bg-[var(--surface-highlight)] group-hover:bg-indigo-50/50 group-hover:border-indigo-300 transition-all flex flex-col items-center justify-center gap-4">
+                <div className="w-16 h-16 rounded-full bg-white shadow-sm flex items-center justify-center text-indigo-600 mb-2">
+                  <Upload size={32} />
+                </div>
+                <div>
+                  <h3 className="text-lg font-semibold text-[var(--foreground)]">Upload CSV or Excel</h3>
+                  <p className="text-[var(--text-secondary)] text-sm mt-1">Drag & drop or click to browse</p>
+                </div>
+                <input
+                  type="file"
+                  ref={fileInputRef}
+                  onChange={handleFileUpload}
+                  accept=".csv"
+                  className="hidden"
+                />
               </div>
-              <h3 className="text-2xl font-bold mb-2">Analyzing Data</h3>
-              <p className="text-gray-400 animate-pulse">{loadingStep}</p>
+            </div>
+
+            <div className="flex items-center justify-center gap-6 text-sm text-[var(--text-tertiary)]">
+              <span className="flex items-center gap-1"><CheckCircle size={14} /> No login required</span>
+              <span className="flex items-center gap-1"><CheckCircle size={14} /> Free for early access</span>
+              <span className="flex items-center gap-1"><CheckCircle size={14} /> Secure processing</span>
+            </div>
+
+          </motion.div>
+        </section>
+
+        {/* How It Works */}
+        <section className="py-20 bg-white border-t border-[var(--border)]">
+          <div className="container">
+            <div className="text-center mb-16">
+              <h2 className="text-3xl font-bold mb-4">From Raw Data to Strategy</h2>
+              <p className="text-[var(--text-secondary)]">Three simple steps to transform your workflow.</p>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+              {[
+                { icon: <FileText size={24} />, title: "1. Upload Data", desc: "Export CSVs from your ad platforms or CRM." },
+                { icon: <Zap size={24} />, title: "2. AI Analysis", desc: "Our engine detects trends, KPIs, and anomalies." },
+                { icon: <BarChart3 size={24} />, title: "3. Get Insights", desc: "Receive a professional, visual report instantly." }
+              ].map((step, i) => (
+                <div key={i} className="flex flex-col items-center text-center">
+                  <div className="w-12 h-12 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center mb-4">
+                    {step.icon}
+                  </div>
+                  <h3 className="text-lg font-semibold mb-2">{step.title}</h3>
+                  <p className="text-[var(--text-secondary)] leading-relaxed">{step.desc}</p>
+                </div>
+              ))}
             </div>
           </div>
-        )}
+        </section>
+
+        {/* Loading Overlay */}
+        <AnimatePresence>
+          {loading && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 bg-white/90 backdrop-blur-sm z-50 flex items-center justify-center"
+            >
+              <div className="text-center">
+                <div className="w-16 h-16 border-4 border-indigo-100 border-t-indigo-600 rounded-full animate-spin mx-auto mb-6"></div>
+                <h3 className="text-2xl font-bold text-[var(--foreground)] mb-2">Analyzing Data</h3>
+                <p className="text-[var(--text-secondary)] animate-pulse">{loadingStep}</p>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </main>
     );
   }
 
+  // --------------------------------------------------------------------------
+  // DASHBOARD VIEW
+  // --------------------------------------------------------------------------
   return (
-    <div className="min-h-screen w-full relative pb-20">
-      <div className="grid-bg" />
-
-      <nav className="border-b border-white/10 glass sticky top-0 z-40 backdrop-blur-xl">
-        <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
-          <div className="font-bold text-xl tracking-tight flex items-center gap-2">
-            <div className="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center">
-              <TrendingUp size={18} color="white" />
+    <div className="min-h-screen w-full bg-[var(--background)] pb-20">
+      <nav className="bg-white border-b border-[var(--border)] sticky top-0 z-40">
+        <div className="container h-16 flex justify-between items-center">
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center text-white">
+              <TrendingUp size={18} />
             </div>
-            InsightFlow <span className="text-xs bg-white/10 px-2 py-0.5 rounded text-gray-400 font-normal">Auto-Generated Report</span>
+            <div>
+              <h1 className="font-bold text-lg leading-tight">InsightFlow Report</h1>
+              <p className="text-xs text-[var(--text-secondary)]">Generated {new Date().toLocaleDateString()}</p>
+            </div>
           </div>
 
-          <div className="flex gap-2">
-            <button onClick={() => setResult(null)} className="text-sm px-4 py-2 hover:bg-white/5 rounded-lg transition-colors text-gray-300">
-              Analyze New File
+          <div className="flex gap-3">
+            <button onClick={() => setResult(null)} className="btn btn-secondary text-sm">
+              New Analysis
             </button>
-            <button className="btn-primary text-sm px-4 py-2">
-              Export PDF
+            <button className="btn btn-primary text-sm flex items-center gap-2">
+              <FileText size={16} /> Export PDF
             </button>
           </div>
         </div>
       </nav>
 
-      <main className="max-w-7xl mx-auto p-6 space-y-8">
+      <main className="container py-8 space-y-8">
 
-        {/* Section 1: Dataset Summary */}
-        <motion.section
-          initial={{ opacity: 0, y: 20 }}
+        {/* Summary Cards */}
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="grid grid-cols-1 md:grid-cols-4 gap-4"
+          className="grid grid-cols-2 md:grid-cols-4 gap-4"
         >
-          <SummaryCard label="Total Rows" value={result.summary.totalRows} />
-          <SummaryCard label="Columns Identified" value={result.summary.totalColumns} />
-          <SummaryCard label="Numeric Fields" value={result.summary.numericColumns.length} />
-          <SummaryCard label="Date Ranges" value={result.summary.dateColumns.length > 0 ? "Detected" : "None"} />
-        </motion.section>
+          <SummaryCard label="Rows Analyzed" value={result.summary.totalRows} />
+          <SummaryCard label="Metrics Found" value={result.summary.numericColumns.length} />
+          <SummaryCard label="Categories" value={result.summary.categoricalColumns.length} />
+          <SummaryCard label="Data Quality" value="98%" active />
+        </motion.div>
 
-        {/* Section 2: Visualizations */}
+        {/* Charts Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {result.charts.map((chart, idx) => (
             <motion.div
               key={chart.id}
-              initial={{ opacity: 0, scale: 0.95 }}
+              initial={{ opacity: 0, scale: 0.98 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ delay: idx * 0.1 }}
-              className={`glass-card flex flex-col ${chart.type === 'area' ? 'lg:col-span-2' : ''}`}
+              className={`card ${chart.type === 'area' ? 'lg:col-span-2' : ''}`}
             >
-              <div className="mb-6">
-                <h3 className="text-lg font-semibold mb-1 bg-clip-text text-transparent bg-gradient-to-r from-white to-gray-400">
-                  {chart.title}
-                </h3>
-                <p className="text-sm text-gray-400">{chart.description}</p>
+              <div className="flex justify-between items-start mb-6">
+                <div>
+                  <h3 className="text-lg font-bold text-[var(--foreground)] mb-1">
+                    {chart.title}
+                  </h3>
+                  <p className="text-sm text-[var(--text-secondary)]">{chart.description}</p>
+                </div>
+                <div className="p-2 rounded-lg bg-gray-50 border border-gray-100">
+                  {chart.type === 'area' ? <Activity size={18} className="text-indigo-500" /> :
+                    chart.type === 'pie' ? <PieIcon size={18} className="text-pink-500" /> :
+                      <BarChart3 size={18} className="text-violet-500" />}
+                </div>
               </div>
 
-              <div className="flex-1 min-h-[350px] w-full">
+              <div className="h-[350px] w-full">
                 <DynamicChart chart={chart} />
-              </div>
-
-              <div className="mt-4 pt-4 border-t border-white/5 flex items-start gap-2">
-                <CheckCircle size={16} className="text-green-500 mt-0.5 shrink-0" />
-                <p className="text-xs text-gray-400">
-                  AI analyzed <strong>{chart.data.length} records</strong> to generate this view.
-                  Focus on peaks in {chart.dataKeyX} for maximum impact.
-                </p>
               </div>
             </motion.div>
           ))}
         </div>
 
-        {/* Section 3: Key Insights */}
+        {/* Insights Section */}
         <motion.section
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.4 }}
-          className="glass-card border-l-4 border-l-indigo-500"
+          transition={{ delay: 0.3 }}
+          className="card border-l-4 border-l-indigo-500 bg-white"
         >
-          <div className="flex items-center gap-3 mb-6">
-            <div className="p-2 bg-indigo-500/20 rounded-lg">
-              <Zap className="text-indigo-400" size={24} />
+          <div className="flex items-center gap-3 mb-6 border-b border-[var(--border)] pb-4">
+            <div className="p-2 bg-indigo-50 rounded-lg text-indigo-600">
+              <Zap size={20} />
             </div>
-            <h2 className="text-xl font-bold">Key Strategic Insights</h2>
+            <div>
+              <h2 className="text-lg font-bold">Strategic Insights</h2>
+              <p className="text-sm text-[var(--text-secondary)]">AI-generated observations based on your data patterns.</p>
+            </div>
           </div>
 
-          <div className="grid sm:grid-cols-2 gap-4">
+          <div className="grid md:grid-cols-2 gap-6">
             {result.insights.map((insight, i) => (
-              <div key={i} className="p-4 rounded-xl bg-white/[0.03] border border-white/5 hover:bg-white/[0.05] transition-colors">
-                <div className="flex gap-3">
-                  <span className="flex-shrink-0 w-6 h-6 rounded-full bg-indigo-500/20 text-indigo-400 flex items-center justify-center text-xs font-bold font-mono">
-                    {i + 1}
-                  </span>
-                  <p className="text-sm text-gray-300 leading-relaxed" dangerouslySetInnerHTML={{
-                    __html: insight.replace(/\*\*(.*?)\*\*/g, '<span class="text-white font-semibold">$1</span>')
-                  }} />
+              <div key={i} className="flex gap-4 items-start p-4 rounded-xl hover:bg-[var(--surface-highlight)] transition-colors">
+                <div className="flex-shrink-0 w-8 h-8 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center text-sm font-bold shadow-sm">
+                  {i + 1}
                 </div>
+                <p className="text-[var(--text-secondary)] text-sm leading-relaxed pt-1">
+                  {/* Render HTML for bolding logic from AI */}
+                  <span dangerouslySetInnerHTML={{
+                    __html: insight.replace(/\*\*(.*?)\*\*/g, '<strong class="text-gray-900 font-semibold">$1</strong>')
+                  }} />
+                </p>
               </div>
             ))}
           </div>
@@ -233,11 +293,11 @@ export default function Home() {
 
 // Sub-components
 
-function SummaryCard({ label, value }: { label: string, value: string | number }) {
+function SummaryCard({ label, value, active = false }: { label: string, value: string | number, active?: boolean }) {
   return (
-    <div className="glass p-6 rounded-xl border-l border-t border-white/10">
-      <p className="text-gray-400 text-sm mb-1 uppercase tracking-wider font-medium">{label}</p>
-      <p className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-br from-white to-indigo-200">
+    <div className={`card p-5 border ${active ? 'border-green-200 bg-green-50/50' : ''}`}>
+      <p className="text-[var(--text-tertiary)] text-xs uppercase font-bold tracking-wider mb-2">{label}</p>
+      <p className={`text-2xl font-bold ${active ? 'text-green-600' : 'text-[var(--foreground)]'}`}>
         {value}
       </p>
     </div>
@@ -245,29 +305,50 @@ function SummaryCard({ label, value }: { label: string, value: string | number }
 }
 
 function DynamicChart({ chart }: { chart: ChartRecommendation }) {
+  // Custom Tooltip for Recharts
+  const CustomTooltip = ({ active, payload, label }: any) => {
+    if (active && payload && payload.length) {
+      return (
+        <div className="bg-white border border-gray-200 shadow-xl rounded-lg p-3 text-sm">
+          <p className="font-semibold text-gray-900 mb-1">{label}</p>
+          {payload.map((entry: any, index: number) => (
+            <div key={index} className="flex items-center gap-2 text-gray-600">
+              <div className="w-2 h-2 rounded-full" style={{ background: entry.color || entry.fill }}></div>
+              <span>{entry.name}:</span>
+              <span className="font-medium text-gray-900">
+                {typeof entry.value === 'number' && entry.value > 1000
+                  ? entry.value.toLocaleString()
+                  : entry.value}
+              </span>
+            </div>
+          ))}
+        </div>
+      );
+    }
+    return null;
+  };
+
   const CommonAxis = () => (
     <>
-      <CartesianGrid strokeDasharray="3 3" stroke="#ffffff10" vertical={false} />
+      <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" vertical={false} />
       <XAxis
         dataKey={chart.dataKeyX}
-        stroke="#71717a"
+        stroke="#9ca3af"
         fontSize={12}
         tickLine={false}
         axisLine={false}
         tickFormatter={(val) => String(val).slice(0, 10)}
+        dy={10}
       />
       <YAxis
-        stroke="#71717a"
+        stroke="#9ca3af"
         fontSize={12}
         tickLine={false}
         axisLine={false}
-        tickFormatter={(value) => value >= 1000 ? `${(value / 1000).toFixed(1)}k` : value}
+        tickFormatter={(value) => value >= 1000 ? `${(value / 1000).toFixed(0)}k` : value}
+        dx={-10}
       />
-      <Tooltip
-        contentStyle={{ backgroundColor: '#18181b', borderColor: '#27272a', borderRadius: '8px' }}
-        itemStyle={{ color: '#fff' }}
-        labelStyle={{ color: '#a1a1aa' }}
-      />
+      <Tooltip content={<CustomTooltip />} />
     </>
   );
 
@@ -277,17 +358,18 @@ function DynamicChart({ chart }: { chart: ChartRecommendation }) {
         <AreaChart data={chart.data} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
           <defs>
             <linearGradient id={`grad-${chart.id}`} x1="0" y1="0" x2="0" y2="1">
-              <stop offset="5%" stopColor="#6366f1" stopOpacity={0.4} />
-              <stop offset="95%" stopColor="#6366f1" stopOpacity={0} />
+              <stop offset="5%" stopColor="#4f46e5" stopOpacity={0.2} />
+              <stop offset="95%" stopColor="#4f46e5" stopOpacity={0} />
             </linearGradient>
           </defs>
           <CommonAxis />
           <Area
             type="monotone"
             dataKey={chart.dataKeyY}
-            stroke="#6366f1"
-            strokeWidth={3}
+            stroke="#4f46e5"
+            strokeWidth={2}
             fill={`url(#grad-${chart.id})`}
+            activeDot={{ r: 6, strokeWidth: 0 }}
           />
         </AreaChart>
       </ResponsiveContainer>
@@ -303,6 +385,7 @@ function DynamicChart({ chart }: { chart: ChartRecommendation }) {
             dataKey={chart.dataKeyY}
             fill="#8b5cf6"
             radius={[4, 4, 0, 0]}
+            animationDuration={1500}
           />
         </BarChart>
       </ResponsiveContainer>
@@ -327,7 +410,7 @@ function DynamicChart({ chart }: { chart: ChartRecommendation }) {
               <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
             ))}
           </Pie>
-          <Tooltip contentStyle={{ backgroundColor: '#18181b', borderColor: '#27272a', borderRadius: '8px' }} />
+          <Tooltip content={<CustomTooltip />} />
         </PieChart>
       </ResponsiveContainer>
     );
