@@ -17,7 +17,7 @@ export type ChartRecommendation = {
     description: string;
     dataKeyX: string; // or name
     dataKeyY: string; // or value
-    data: any[];
+    data: Record<string, unknown>[];
 };
 
 export type AnalysisResult = {
@@ -36,11 +36,11 @@ const isDate = (value: string) => {
 const isNumeric = (value: string | number) => {
     if (typeof value === 'number') return true;
     if (!value) return false;
-    const clean = value.replace(/[$,]/g, '');
+    const clean = String(value).replace(/[$,]/g, '');
     return !isNaN(parseFloat(clean)) && isFinite(parseFloat(clean));
 };
 
-const parseValue = (value: any) => {
+const parseValue = (value: unknown) => {
     if (typeof value === 'string') {
         // Remove currency symbols, commas
         const clean = value.replace(/[$,]/g, '');
@@ -58,7 +58,7 @@ export const analyzeData = async (file: File): Promise<AnalysisResult> => {
             skipEmptyLines: true,
             dynamicTyping: true,
             complete: (results) => {
-                const data = results.data as any[];
+                const data = results.data as Record<string, unknown>[];
                 if (!data || data.length === 0) {
                     reject("No data found");
                     return;
@@ -72,9 +72,9 @@ export const analyzeData = async (file: File): Promise<AnalysisResult> => {
 
                 // Sample first 5 rows to determine types
                 columns.forEach(col => {
-                    const sampleValues = data.slice(0, 5).map(row => row[col]);
+                    const sampleValues = data.slice(0, 5).map(row => row[col] as string | number);
                     const isNum = sampleValues.every(v => isNumeric(v));
-                    const isDt = sampleValues.every(v => isDate(String(v))); // Check Date first? Actually numeric checks might define dates as NaN usually.
+                    const isDt = sampleValues.every(v => isDate(String(v)));
 
                     if (isNum) numericCols.push(col);
                     else if (isDt) dateCols.push(col);
@@ -97,7 +97,7 @@ export const analyzeData = async (file: File): Promise<AnalysisResult> => {
 
                 // Clean Data for Charts
                 const cleanData = data.map(row => {
-                    const newRow: any = { ...row };
+                    const newRow: Record<string, unknown> = { ...row };
                     numericCols.forEach(col => {
                         newRow[col] = parseValue(row[col]);
                     });
@@ -105,13 +105,12 @@ export const analyzeData = async (file: File): Promise<AnalysisResult> => {
                 });
 
                 // Strategy A: Time Series Trend (Date + Numeric)
-                // If we have a date column and a numeric column, show trend
                 if (dateCols.length > 0 && numericCols.length > 0) {
                     const dateCol = dateCols[0];
-                    const numCol = numericCols[0]; // Primary metric
+                    const numCol = numericCols[0];
 
                     // Sort by date
-                    const sortedData = [...cleanData].sort((a, b) => new Date(a[dateCol]).getTime() - new Date(b[dateCol]).getTime());
+                    const sortedData = [...cleanData].sort((a, b) => new Date(a[dateCol] as string).getTime() - new Date(b[dateCol] as string).getTime());
 
                     charts.push({
                         id: 'trend-1',
@@ -124,26 +123,27 @@ export const analyzeData = async (file: File): Promise<AnalysisResult> => {
                     });
 
                     // Insight for Trend
-                    const firstVal = sortedData[0][numCol];
-                    const lastVal = sortedData[sortedData.length - 1][numCol];
-                    const growth = ((lastVal - firstVal) / firstVal) * 100;
-                    insights.push(`**Overall Growth**: ${numCol} shifted from ${firstVal} to ${lastVal}, representing a **${growth.toFixed(1)}% ${growth > 0 ? 'increase' : 'decrease'}** over the period.`);
+                    if (sortedData.length > 0) {
+                        const firstVal = sortedData[0][numCol] as number;
+                        const lastVal = sortedData[sortedData.length - 1][numCol] as number;
+                        const growth = ((lastVal - firstVal) / firstVal) * 100;
+                        insights.push(`**Overall Growth**: ${numCol} shifted from ${firstVal} to ${lastVal}, representing a **${growth.toFixed(1)}% ${growth > 0 ? 'increase' : 'decrease'}** over the period.`);
+                    }
                 }
 
-                // Strategy B: Categorical Comparison (Category + Numeric)
+                // Strategy B: Categorical Comparison
                 if (catCols.length > 0 && numericCols.length > 0) {
                     const catCol = catCols[0];
                     const numCol = numericCols[0];
 
-                    // Aggregate data if many rows
+                    // Aggregate data
                     const grouped = cleanData.reduce((acc, curr) => {
-                        const key = curr[catCol] || 'Unknown';
-                        acc[key] = (acc[key] || 0) + (curr[numCol] || 0);
+                        const key = (curr[catCol] as string) || 'Unknown';
+                        acc[key] = (acc[key] || 0) + ((curr[numCol] as number) || 0);
                         return acc;
                     }, {} as Record<string, number>);
 
                     const aggregatedData = Object.entries(grouped).map(([name, value]) => ({ name, value }));
-                    // Sort by value desc
                     aggregatedData.sort((a, b) => (b.value as number) - (a.value as number));
                     const top5 = aggregatedData.slice(0, 5);
 
@@ -157,26 +157,25 @@ export const analyzeData = async (file: File): Promise<AnalysisResult> => {
                         data: top5
                     });
 
-                    // Insight
-                    insights.push(`**Market Leader**: The top performing ${catCol} is **${top5[0].name}**, contributing **${Number(top5[0].value).toLocaleString()}** to the total ${numCol}.`);
+                    if (top5.length > 0) {
+                        insights.push(`**Market Leader**: The top performing ${catCol} is **${top5[0].name}**, contributing **${Number(top5[0].value).toLocaleString()}** to the total ${numCol}.`);
+                    }
                 }
 
-                // Strategy C: Distribution (Pie) - Another Numeric Column or same one
+                // Strategy C: Distribution (Pie)
                 if (catCols.length > 0 && numericCols.length > 0) {
                     const catCol = catCols[0];
                     const numCol = numericCols.length > 1 ? numericCols[1] : numericCols[0];
 
-                    // Aggregate
                     const grouped = cleanData.reduce((acc, curr) => {
-                        const key = curr[catCol] || 'Unknown';
-                        acc[key] = (acc[key] || 0) + (curr[numCol] || 0);
+                        const key = (curr[catCol] as string) || 'Unknown';
+                        acc[key] = (acc[key] || 0) + ((curr[numCol] as number) || 0);
                         return acc;
                     }, {} as Record<string, number>);
 
                     const aggregatedData = Object.entries(grouped).map(([name, value]) => ({ name, value }));
                     const total = aggregatedData.reduce((sum, item) => sum + (item.value as number), 0);
 
-                    // Filter distinct categories for pie (limit to 6)
                     const sorted = aggregatedData.sort((a, b) => (b.value as number) - (a.value as number)).slice(0, 6);
 
                     charts.push({
@@ -189,15 +188,16 @@ export const analyzeData = async (file: File): Promise<AnalysisResult> => {
                         data: sorted
                     });
 
-                    // Insight
-                    const topShare = ((sorted[0].value as number) / total * 100).toFixed(1);
-                    insights.push(`**Concentration Risk**: The top segment (${sorted[0].name}) accounts for **${topShare}%** of the total ${numCol}, indicating high dependency.`);
+                    if (sorted.length > 0) {
+                        const topShare = ((sorted[0].value as number) / total * 100).toFixed(1);
+                        insights.push(`**Concentration Risk**: The top segment (${sorted[0].name}) accounts for **${topShare}%** of the total ${numCol}, indicating high dependency.`);
+                    }
                 }
 
                 // General Stats Insights
                 if (numericCols.length > 0) {
                     const col = numericCols[0];
-                    const sum = cleanData.reduce((acc, r) => acc + (r[col] || 0), 0);
+                    const sum = cleanData.reduce((acc, r) => acc + ((r[col] as number) || 0), 0);
                     const avg = sum / cleanData.length;
                     insights.push(`**Average Performance**: The mean ${col} across all data points is **${avg.toLocaleString(undefined, { maximumFractionDigits: 1 })}**.`);
                 }
@@ -205,10 +205,10 @@ export const analyzeData = async (file: File): Promise<AnalysisResult> => {
                 resolve({
                     summary,
                     charts,
-                    insights: insights.slice(0, 7) // Limit to 7 as requested
+                    insights: insights.slice(0, 7)
                 });
             },
-            error: (err: any) => {
+            error: (err: unknown) => {
                 reject(err instanceof Error ? err : new Error(String(err)));
             }
         });
