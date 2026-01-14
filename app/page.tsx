@@ -10,7 +10,7 @@ import {
   ArrowRight, RefreshCw, Download, Layers, Shield,
   ChevronRight, MoreHorizontal, Maximize2, Bell, Search, LayoutDashboard, Settings
 } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import { analyzeData, AnalysisResult, ChartRecommendation } from "../lib/ai-analyst";
 
 // Professional Enterprise Palette (No gradients)
@@ -312,8 +312,9 @@ function MetricCard({ label, value }: { label: string, value: string | number })
   )
 }
 
-function DynamicChart({ chart }: { chart: ChartRecommendation }) {
-  const CommonAxis = () => (
+
+function CommonAxis({ chart }: { chart: ChartRecommendation }) {
+  return (
     <>
       <CartesianGrid strokeDasharray="3 3" stroke="#F1F5F9" vertical={false} />
       <XAxis
@@ -347,7 +348,9 @@ function DynamicChart({ chart }: { chart: ChartRecommendation }) {
       />
     </>
   );
+}
 
+function DynamicChart({ chart }: { chart: ChartRecommendation }) {
   if (chart.type === 'area') {
     return (
       <ResponsiveContainer width="100%" height="100%">
@@ -358,7 +361,7 @@ function DynamicChart({ chart }: { chart: ChartRecommendation }) {
               <stop offset="95%" stopColor="#2563EB" stopOpacity={0} />
             </linearGradient>
           </defs>
-          <CommonAxis />
+          <CommonAxis chart={chart} />
           <Area
             type="monotone"
             dataKey={chart.dataKeyY}
@@ -376,7 +379,7 @@ function DynamicChart({ chart }: { chart: ChartRecommendation }) {
     return (
       <ResponsiveContainer width="100%" height="100%">
         <BarChart data={chart.data} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-          <CommonAxis />
+          <CommonAxis chart={chart} />
           <Bar
             dataKey={chart.dataKeyY}
             fill="#3B82F6"

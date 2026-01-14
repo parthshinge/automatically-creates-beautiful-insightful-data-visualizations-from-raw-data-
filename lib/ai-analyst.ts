@@ -137,7 +137,7 @@ export const analyzeData = async (file: File): Promise<AnalysisResult> => {
                     const numCol = numericCols[0];
 
                     // Aggregate data
-                    const grouped = cleanData.reduce((acc, curr) => {
+                    const grouped = cleanData.reduce((acc: Record<string, number>, curr) => {
                         const key = (curr[catCol] as string) || 'Unknown';
                         acc[key] = (acc[key] || 0) + ((curr[numCol] as number) || 0);
                         return acc;
@@ -167,7 +167,7 @@ export const analyzeData = async (file: File): Promise<AnalysisResult> => {
                     const catCol = catCols[0];
                     const numCol = numericCols.length > 1 ? numericCols[1] : numericCols[0];
 
-                    const grouped = cleanData.reduce((acc, curr) => {
+                    const grouped = cleanData.reduce((acc: Record<string, number>, curr) => {
                         const key = (curr[catCol] as string) || 'Unknown';
                         acc[key] = (acc[key] || 0) + ((curr[numCol] as number) || 0);
                         return acc;
